@@ -85,7 +85,14 @@ public class Lector {
 			        }
 			        
 			        
-			        Map<String, String> obtenerDatosFinales = genDin.obtenerDatosFinales(createPropertiesMap, header, lastLine);
+			        Map<String, String> datosFinales = genDin.obtenerDatosFinales(createPropertiesMap, header, lastLine);
+			        
+			        // Extraemos id para generar dato
+			        String id = genDin.obtenerID(propiedades.getProperty(file + "ID"), header, lastLine);
+			        
+			        // Generamos archivo
+			        genDin.generarArchivo(id, datosFinales);
+			        
 //					if (file.equals("Cement.OUT")) {
 //						Cemento Cem = new Cemento();
 //						Cem.GenerarCemento(lineaLeida);
