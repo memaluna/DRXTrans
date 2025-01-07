@@ -103,7 +103,7 @@ public class GeneradorDinamico {
         return map4;
     }
     
-    public void generarArchivo(String id, Map<String, String> datosFinales) {
+    public void generarArchivo(String id, Map<String, String> datosFinales, String fileName) {
 		
     	try {
 			int dia, mes, ano, hora2, min, seg;
@@ -115,17 +115,8 @@ public class GeneradorDinamico {
 			hora2 = hoy.getHour();
 			min = hoy.getMinute();
 			seg = hoy.getSecond();
-			String ruta = "C:\\Resultados\\CK_dia_" + dia + "-" + mes + "-" + ano + "_hora_" + hora2 + "-" + min
+			String ruta = "C:\\Resultados\\"+ fileName + "_dia_" + dia + "-" + mes + "-" + ano + "_hora_" + hora2 + "-" + min
 					+ "-" + seg + ".QAN";
-			// "\\C:\\Users\\josluna\\Desktop\\directorio\\CK_dia_" + dia + "-" + mes + "-"
-			// + ano + "_hora_"
-			// + hora2 + "-" + min + "-" + seg + ".QAN";
-
-//			String contenido = fecha + ";" + hora + ";" + tipo + ";MG.C3S_DRX=" + C3S_DRX + ";MG.C2S_DRX=" + C2S_DRX
-//				+ ";MG.C4AF_DRX=" + C4AF_DRX + ";MG.c_C3A_DRX=" + c_C3A_DRX + ";MG.o_C3A_DRX=" + o_C3A_DRX
-//				+ ";MG.CaO_DRX=" + CaO_DRX + ";MG.CaOH2 _DRX=" + CaOH2_DRX + ";MG.MgO_DRX=" + MgO_DRX
-//				+ ";MG.K2SO4_DRX=" + K2SO4_DRX + ";MG.Alphthitalite_DRX=" + Alphthitalite_DRX
-//				+ ";MG.Langbeinite_DRX=" + Langbeinite_DRX + ";";
 			
 			String contenidoNuevo = id + ";";
 			for (Entry<String, String> entry : datosFinales.entrySet()) {			

@@ -1,6 +1,8 @@
 package main;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -15,10 +17,22 @@ public class Main {
 		IconoMensajes Ico = new IconoMensajes();
 		Ico.generarIcono();
 		
+		Properties propiedades = new Properties();
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();           
+		InputStream stream = loader.getResourceAsStream("conf.properties");
+		try {
+			propiedades.load(stream);
+		} catch (IOException e1) {
+			Log.warn("No se puede cargar archivo de configuración.");
+			Ico.mandarMsj("No se puede cargar archivo de configuración.");
+		}
+				
 		Lector fileChangeWatcher = new Lector();
 		try {
 //			fileChangeWatcher.doWath("C:\\XRD\\results");
-			fileChangeWatcher.doWath("C:\\QCX");
+			String directorioEntrada = propiedades.getProperty("DirectorioEntrada");
+			Ico.mandarMsj("Observando Directorio: " + directorioEntrada);
+			fileChangeWatcher.doWath(directorioEntrada);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

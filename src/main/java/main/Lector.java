@@ -1,6 +1,5 @@
 package main;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -16,14 +15,7 @@ public class Lector {
 
 
 	public void doWath(String directory) throws IOException {
-		
-		System.out.println(Lector.class.getClassLoader().getResource("conf.properties"));
-		
-		URL inputStream = Lector.class.getClassLoader().getResource("conf.properties");
-		if (inputStream == null) {
-		    throw new FileNotFoundException("El archivo conf.properties no se encontró en resources.");
-		}
-		
+				
 		Properties propiedades = new Properties();
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();           
 		InputStream stream = loader.getResourceAsStream("conf.properties");
@@ -60,7 +52,7 @@ public class Lector {
 					Generador Gen = new Generador();
 					String lineaLeida = Gen.leerArchivo(file, directory);
 					
-					String fases = propiedades.getProperty(file);
+					String fases = propiedades.getProperty(file + "-Campos");
 					GeneradorDinamico genDin = new GeneradorDinamico();
 					Map<String, String> createPropertiesMap = genDin.createPropertiesMap(fases);
 					
@@ -88,10 +80,10 @@ public class Lector {
 			        Map<String, String> datosFinales = genDin.obtenerDatosFinales(createPropertiesMap, header, lastLine);
 			        
 			        // Extraemos id para generar dato
-			        String id = genDin.obtenerID(propiedades.getProperty(file + "ID"), header, lastLine);
+			        String id = genDin.obtenerID(propiedades.getProperty(file + "-ID"), header, lastLine);
 			        
 			        // Generamos archivo
-			        genDin.generarArchivo(id, datosFinales);
+			        genDin.generarArchivo(id, datosFinales, propiedades.getProperty(file + "-FileName"));
 			        
 //					if (file.equals("Cement.OUT")) {
 //						Cemento Cem = new Cemento();

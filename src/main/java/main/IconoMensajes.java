@@ -1,7 +1,7 @@
 package main;
 
 import java.awt.AWTException;
-
+import java.awt.GridLayout;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -9,8 +9,16 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 public class IconoMensajes {
 
@@ -34,14 +42,23 @@ public class IconoMensajes {
 			MenuItem defaultItem = new MenuItem("Salir");
 			defaultItem.addActionListener(exitListener);
 			popup.add(defaultItem);
+			//Agregamos boton Config
+			MenuItem configItem = new MenuItem("Configuración");
+//			configItem.addActionListener(exitListener);
+			popup.add(configItem);
+			
+            configItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    // Llama a la interfaz de configuración
+                	InterfazConfig configuracionUI = new InterfazConfig();
+                    configuracionUI.mostrarVentanaConfiguracion();
+                }
+            });
 			
 			trayIcon = new TrayIcon(im.getImage(), "NHRobot", popup);
 			trayIcon.setImageAutoSize(true);
-			
-			
-			
+									
 			try {
-
 				tray.add(trayIcon);
 
 			} catch (AWTException ex) {
@@ -52,6 +69,10 @@ public class IconoMensajes {
 			System.err.println("System tray is currently not supported.");
 		}
 		trayIcon.displayMessage("NHRobot", "Inicio de aplicación.", TrayIcon.MessageType.NONE);
+	}
+	
+	public void mandarMsj(String mensaje) {
+		trayIcon.displayMessage("NHRobot", mensaje, TrayIcon.MessageType.NONE);
 	}
 
 }
