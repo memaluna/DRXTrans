@@ -118,10 +118,19 @@ public class GeneradorDinamico {
 			String ruta = "C:\\Resultados\\"+ fileName + "_dia_" + dia + "-" + mes + "-" + ano + "_hora_" + hora2 + "-" + min
 					+ "-" + seg + ".QAN";
 			
+			//Procesamiento del ID			
+			int indiceInicial = id.indexOf("~");
+			// System.out.println(linea.charAt(indiceInicial - 10));
+			if (id.charAt(indiceInicial - 10) == 'M' || id.charAt(indiceInicial - 10) == 'Y') {
+				id = GenerarArchivoConID(id);
+			} else {
+				id = GenerarArchivoConFechaHora(id);
+			}			
+						
+			//Concatenamos id con datos...
 			String contenidoNuevo = id + ";";
 			for (Entry<String, String> entry : datosFinales.entrySet()) {			
-				contenidoNuevo = contenidoNuevo + entry.getKey() + "=" + entry.getValue() + ";";
-				
+				contenidoNuevo = contenidoNuevo + entry.getKey() + "=" + entry.getValue() + ";";				
 			}
 			File file = new File(ruta);
 			// Si el archivo no existe es creado
@@ -138,7 +147,43 @@ public class GeneradorDinamico {
     	
     }
     
-    public String obtenerID(String idHeader, Map<String, Integer> header, Map<Integer, String> lastLine) {
+    private String GenerarArchivoConFechaHora(String id) {
+		String newId = null;		
+		String hora = "";
+		String fecha = "";
+		int indiceInicial = id.indexOf("~");
+
+		for (int i = indiceInicial - 8; i <= indiceInicial - 1; i++) {
+			fecha = fecha + id.charAt(i);
+		}
+
+		for (int i = indiceInicial - 14; i <= indiceInicial - 10; i++) {
+			char caracter;
+			if (id.charAt(i) == '_') {
+				caracter = ':';
+			} else {
+				caracter = id.charAt(i);
+			}
+			hora = hora + caracter;
+		}
+		char tipo = id.charAt(indiceInicial - 16);
+		
+		newId = fecha + ";" + hora + ";" + tipo;
+		
+		return newId;
+	}
+
+	private String GenerarArchivoConID(String id) {
+		String newId = null;
+		int indiceInicial = id.indexOf("~");
+
+		for (int i = indiceInicial - 10; i <= indiceInicial - 1; i++) {
+			newId = newId + id.charAt(i);
+		}
+		return newId;
+	}
+
+	public String obtenerID(String idHeader, Map<String, Integer> header, Map<Integer, String> lastLine) {
     	String id = null;
     	System.out.println(idHeader);   	
     	Integer index = header.get(idHeader);   	

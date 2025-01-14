@@ -16,10 +16,13 @@ public class Lector {
 
 	public void doWath(String directory) throws IOException {
 				
-		Properties propiedades = new Properties();
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();           
-		InputStream stream = loader.getResourceAsStream("conf.properties");
-		propiedades.load(stream);
+//		Properties propiedades = new Properties();
+//		ClassLoader loader = Thread.currentThread().getContextClassLoader();           
+//		InputStream stream = loader.getResourceAsStream("conf.properties");
+//		propiedades.load(stream);
+		
+		String configPath = "conf.properties";
+		ExternalConfigManager configManager = new ExternalConfigManager(configPath);
 		
 		System.out.println("WatchService in " + directory);
 
@@ -52,7 +55,7 @@ public class Lector {
 					Generador Gen = new Generador();
 					String lineaLeida = Gen.leerArchivo(file, directory);
 					
-					String fases = propiedades.getProperty(file + "-Campos");
+					String fases = configManager.getProperty(file + "-Campos");
 					GeneradorDinamico genDin = new GeneradorDinamico();
 					Map<String, String> createPropertiesMap = genDin.createPropertiesMap(fases);
 					
@@ -80,10 +83,10 @@ public class Lector {
 			        Map<String, String> datosFinales = genDin.obtenerDatosFinales(createPropertiesMap, header, lastLine);
 			        
 			        // Extraemos id para generar dato
-			        String id = genDin.obtenerID(propiedades.getProperty(file + "-ID"), header, lastLine);
+			        String id = genDin.obtenerID(configManager.getProperty(file + "-ID"), header, lastLine);
 			        
 			        // Generamos archivo
-			        genDin.generarArchivo(id, datosFinales, propiedades.getProperty(file + "-FileName"));
+			        genDin.generarArchivo(id, datosFinales, configManager.getProperty(file + "-FileName"));
 			        
 //					if (file.equals("Cement.OUT")) {
 //						Cemento Cem = new Cemento();

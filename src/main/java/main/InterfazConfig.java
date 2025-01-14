@@ -2,6 +2,9 @@ package main;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import org.apache.log4j.Logger;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,8 +13,11 @@ import java.util.*;
 
 public class InterfazConfig {
 
-    private Properties properties = new Properties();
-	ClassLoader loader = Thread.currentThread().getContextClassLoader();           
+//    private Properties properties = new Properties();
+//	ClassLoader loader = Thread.currentThread().getContextClassLoader();       
+	private static final Logger Log = Logger.getLogger(InterfazConfig.class);
+	String configPath = "conf.properties";
+	ExternalConfigManager configManager = null;
 
     public void mostrarVentanaConfiguracion() {
         // Cargar propiedades desde el archivo
@@ -28,9 +34,9 @@ public class InterfazConfig {
         panelFijo.setBorder(BorderFactory.createTitledBorder("Propiedades Fijas"));
 
         JLabel labelDirectorioEntrada = new JLabel("Directorio de Entrada:");
-        JTextField textDirectorioEntrada = new JTextField(properties.getProperty("DirectorioEntrada", ""));
+        JTextField textDirectorioEntrada = new JTextField(configManager.getProperty("DirectorioEntrada", ""));
         JLabel labelDirectorioSalida = new JLabel("Directorio de Salida:");
-        JTextField textDirectorioSalida = new JTextField(properties.getProperty("DirectorioSalida", ""));
+        JTextField textDirectorioSalida = new JTextField(configManager.getProperty("DirectorioSalida", ""));
 
         panelFijo.add(labelDirectorioEntrada);
         panelFijo.add(textDirectorioEntrada);
@@ -77,7 +83,7 @@ public class InterfazConfig {
         // Acción para guardar las propiedades en el archivo
         btnGuardar.addActionListener(e -> {
             guardarPropiedades(textDirectorioEntrada.getText(), textDirectorioSalida.getText(), tableModel);
-            JOptionPane.showMessageDialog(frame, "Configuración guardada con éxito.");
+            JOptionPane.showMessageDialog(frame, "Configuración guardada con éxito. Para que los cambios sean exitosos, por favor reinicie el programa.");
         });
 
         // Agregar paneles a la ventana
@@ -91,17 +97,26 @@ public class InterfazConfig {
     }
 
     private void cargarPropiedades() {
-        try (InputStream stream = loader.getResourceAsStream("conf.properties")) {
-            properties.load(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try (InputStream stream = loader.getResourceAsStream("conf.properties")) {
+//            properties.load(stream);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    	
+		String configPath = "conf.properties";
+		try {
+			configManager = new ExternalConfigManager(configPath);
+		} catch (IOException e) {
+			Log.error(e);
+			Log.info("No se pudo cargar properties en interfaz.");
+			e.printStackTrace();
+		}
     }
 
     private void cargarDatosDinamicos(DefaultTableModel tableModel) {
         Map<String, Map<String, String>> elementos = new HashMap<>();
 
-        properties.forEach((key, value) -> {
+        configManager.forEach((key, value) -> {
             String keyStr = key.toString();
             if (keyStr.contains("-Campos") || keyStr.contains("-ID") || keyStr.contains("-FileName")) {
                 String elemento = keyStr.substring(0, keyStr.lastIndexOf('-'));
@@ -122,11 +137,11 @@ public class InterfazConfig {
 
     private void guardarPropiedades(String directorioEntrada, String directorioSalida, DefaultTableModel tableModel) {
         // Guardar propiedades fijas
-        properties.setProperty("DirectorioEntrada", directorioEntrada);
-        properties.setProperty("DirectorioSalida", directorioSalida);
+    	configManager.setProperty("DirectorioEntrada", directorioEntrada);
+    	configManager.setProperty("DirectorioSalida", directorioSalida);
 
         // Eliminar propiedades dinámicas existentes
-        properties.keySet().removeIf(key -> key.toString().matches(".*-(Campos|ID|FileName)$"));
+    	configManager.keySet().removeIf(key -> key.toString().matches(".*-(Campos|ID|FileName)$"));
 
         // Guardar propiedades dinámicas
         for (int i = 0; i < tableModel.getRowCount(); i++) {
@@ -136,15 +151,15 @@ public class InterfazConfig {
             String campos = tableModel.getValueAt(i, 3).toString();
 
             if (!elemento.isEmpty()) {
-                properties.setProperty(elemento + "-FileName", fileName);
-                properties.setProperty(elemento + "-ID", id);
-                properties.setProperty(elemento + "-Campos", campos);
+            	configManager.setProperty(elemento + "-FileName", fileName);
+            	configManager.setProperty(elemento + "-ID", id);
+            	configManager.setProperty(elemento + "-Campos", campos);
             }
         }
 
         // Guardar en el archivo
         try (FileOutputStream output = new FileOutputStream("src/main/resources/conf.properties")) {
-            properties.store(output, "Configuración actualizada");
+        	configManager.store(output, "Configuración actualizada");
         } catch (IOException e) {
             e.printStackTrace();
         }
