@@ -1,20 +1,26 @@
 package main;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.log4j.Logger;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*;
-import java.util.*;
-
 public class InterfazConfig {
 
-//    private Properties properties = new Properties();
-//	ClassLoader loader = Thread.currentThread().getContextClassLoader();       
 	private static final Logger Log = Logger.getLogger(InterfazConfig.class);
 	String configPath = "conf.properties";
 	ExternalConfigManager configManager = null;
@@ -96,13 +102,7 @@ public class InterfazConfig {
         frame.setVisible(true);
     }
 
-    private void cargarPropiedades() {
-//        try (InputStream stream = loader.getResourceAsStream("conf.properties")) {
-//            properties.load(stream);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    	
+    private void cargarPropiedades() {   	
 		String configPath = "conf.properties";
 		try {
 			configManager = new ExternalConfigManager(configPath);
@@ -158,8 +158,8 @@ public class InterfazConfig {
         }
 
         // Guardar en el archivo
-        try (FileOutputStream output = new FileOutputStream("src/main/resources/conf.properties")) {
-        	configManager.store(output, "Configuración actualizada");
+        try {
+        	configManager.save("Configuración actualizada");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,26 +1,22 @@
 package main;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.*;
-import java.util.Map;
-import java.util.Properties;
-
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.Map;
 
 public class Lector {
 
 
 	public void doWath(String directory) throws IOException {
-				
-//		Properties propiedades = new Properties();
-//		ClassLoader loader = Thread.currentThread().getContextClassLoader();           
-//		InputStream stream = loader.getResourceAsStream("conf.properties");
-//		propiedades.load(stream);
-		
+						
 		String configPath = "conf.properties";
 		ExternalConfigManager configManager = new ExternalConfigManager(configPath);
 		
@@ -88,14 +84,6 @@ public class Lector {
 			        // Generamos archivo
 			        genDin.generarArchivo(id, datosFinales, configManager.getProperty(file + "-FileName"));
 			        
-//					if (file.equals("Cement.OUT")) {
-//						Cemento Cem = new Cemento();
-//						Cem.GenerarCemento(lineaLeida);
-//					}
-//					if (file.equals("Clinker_HTEC_MG.out")) {
-//						CK CK = new CK();
-//						CK.GenerarCK(lineaLeida);
-//					}
 				}
 
 				// Volvemos a escuchar. Lo mantenemos en un loop para escuchar indefinidamente.
