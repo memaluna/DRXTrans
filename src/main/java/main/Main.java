@@ -12,7 +12,7 @@ public class Main {
 	public static void main(String[] args) {
 		
 		//Levantamos interfaz icono en segundo plano.
-		IconoMensajes Ico = new IconoMensajes();
+		IconoMensajes Ico = IconoMensajes.getInstance();
 		Ico.generarIcono();
 				
 		ExternalConfigManager configManager = null;
@@ -24,14 +24,33 @@ public class Main {
 			Ico.mandarMsj("No se puede cargar archivo de configuración.");
 		}
 				
-		Lector fileChangeWatcher = new Lector();
-		try {
-			String directorioEntrada = configManager.getProperty("DirectorioEntrada");
-			Ico.mandarMsj("Observando Directorio: " + directorioEntrada);
-			fileChangeWatcher.doWath(directorioEntrada);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		String directorioEntrada = configManager.getProperty("DirectorioEntrada");
+		String directorioEntrada2 = configManager.getProperty("DirectorioEntrada2");
+		Ico.mandarMsj("Observando Directorio: " + directorioEntrada);
+		Ico.mandarMsj("Observando Directorio 2: " + directorioEntrada2);
+		
+		// Crear y ejecutar hilos para cada directorio
+		Thread watcher1 = new Thread(() -> {
+		    try {
+		        new Lector().doWatch(directorioEntrada);
+		    } catch (IOException e) {
+		    	String msjError = "Error al ejecutar hilo 1: " + e;
+		        Log.error(msjError);
+		        Ico.mandarMsj(msjError);
+		    }
+		});
+
+		Thread watcher2 = new Thread(() -> {
+		    try {
+		        new Lector().doWatch(directorioEntrada2);
+		    } catch (IOException e) {
+		    	String msjError = "Error al ejecutar hilo 2: " + e;
+		        Log.error(msjError);
+		        Ico.mandarMsj(msjError);
+		    }
+		});
+		watcher1.start();
+		watcher2.start();		
 	}
 
 }

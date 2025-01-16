@@ -19,9 +19,9 @@ public class GeneradorDinamico {
 	private static final Logger Log = Logger.getLogger(Main.class);
 	private String propertiesLine;
 	private Map<String, String> propertiesMap = new LinkedHashMap<>();
+	IconoMensajes Ico = IconoMensajes.getInstance();
 	
-	public Map<String, String> createPropertiesMap(String propertiesLine){
-		System.out.println(propertiesLine);		
+	public Map<String, String> createPropertiesMap(String propertiesLine){		
 		Map<String, String> map = new LinkedHashMap<>();
 		try {
 	        // Separar la cadena en pares clave-valor
@@ -36,8 +36,10 @@ public class GeneradorDinamico {
 	        }      
 			return map;
 		} catch (Exception e) {
-			Log.warn(e);
-			Log.warn("Error: Archivo de entrada con formato incorrecto.");
+			Log.error(e);
+			String msjError = "Error: Archivo de entrada con formato incorrecto.";
+			Log.error(msjError);
+			Ico.mandarMsj(msjError);
 			return map;
 		}
 
@@ -53,7 +55,11 @@ public class GeneradorDinamico {
                     headerMap.put(headers[i].trim(), i);
                 }
             }
-        }
+        }catch (Exception e) {
+        	String mensajeError = "No se encuentra información sobre el archivo generado " + filePath + ".";
+			Log.error(mensajeError);
+			Ico.mandarMsj(mensajeError);
+		}
         return headerMap;
     }
        
@@ -103,14 +109,14 @@ public class GeneradorDinamico {
         return map4;
     }
     
-    public void generarArchivo(String id, Map<String, String> datosFinales, String fileName) {
+    public void generarArchivo(String id, Map<String, String> datosFinales, String fileName, String directorio) {
 		
     	try {
 			int dia, mes, ano, hora2, min, seg;
 			LocalDateTime hoy = LocalDateTime.now();
 			
 			dia = hoy.getDayOfMonth();
-			mes = hoy.getMonthValue();
+			mes = hoy.getMonthValue(); 
 			ano = hoy.getYear();
 			hora2 = hoy.getHour();
 			min = hoy.getMinute();
@@ -118,10 +124,36 @@ public class GeneradorDinamico {
 			String ruta = "C:\\Resultados\\"+ fileName + "_dia_" + dia + "-" + mes + "-" + ano + "_hora_" + hora2 + "-" + min
 					+ "-" + seg + ".QAN";
 			
-			//Procesamiento del ID			
-			int indiceInicial = id.indexOf("~");
+			//Procesamiento del ID
+			//Sacamos directorio si contiene
+			char MoY  = id.charAt(4);
+			char MGoYO = id.charAt(5);
+			
+			if (directorio.compareTo("true") == 0) {
+				//vemos si corresponde sacar 14 o 20 caracteres.
+				int tildeIndex = id.indexOf('~');
+				int charAQuitar;
+				if ((MoY == 'M' || MoY == 'Y') && (MGoYO == 'G' || MGoYO == 'O')) {
+					charAQuitar = 14;
+				}else {
+					charAQuitar = 20;
+				}
+				
+				String resultado = null;				
+		        if (tildeIndex > 0 && tildeIndex >= charAQuitar) {
+		            // Extraer los 20 caracteres anteriores al ~
+		            resultado = id.substring(tildeIndex - charAQuitar, tildeIndex);
+		            System.out.println("Resultado: " + resultado);
+		        } else {
+		            System.out.println("No hay suficientes caracteres antes del símbolo ~");
+		            Log.error("No se encontró '~' en la entrada.");
+		        }							
+				id = resultado;
+			}
+			
 			// System.out.println(linea.charAt(indiceInicial - 10));
-			if (id.charAt(indiceInicial - 10) == 'M' || id.charAt(indiceInicial - 10) == 'Y') {
+
+			if ((MoY == 'M' || MoY == 'Y') && (MGoYO == 'G' || MGoYO == 'O')) {
 				id = GenerarArchivoConID(id);
 			} else {
 				id = GenerarArchivoConFechaHora(id);
@@ -142,7 +174,9 @@ public class GeneradorDinamico {
 			bw.write(contenidoNuevo);
 			bw.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			String msjError = "Formato incorrecto de identificación de muestras.";
+			Ico.mandarMsj(msjError);
+			Log.error(msjError);
 		}
     	
     }
@@ -151,13 +185,12 @@ public class GeneradorDinamico {
 		String newId = null;		
 		String hora = "";
 		String fecha = "";
-		int indiceInicial = id.indexOf("~");
 
-		for (int i = indiceInicial - 8; i <= indiceInicial - 1; i++) {
+		for (int i = 12; i <= 19; i++) {
 			fecha = fecha + id.charAt(i);
 		}
 
-		for (int i = indiceInicial - 14; i <= indiceInicial - 10; i++) {
+		for (int i = 6; i <= 10; i++) {
 			char caracter;
 			if (id.charAt(i) == '_') {
 				caracter = ':';
@@ -166,7 +199,7 @@ public class GeneradorDinamico {
 			}
 			hora = hora + caracter;
 		}
-		char tipo = id.charAt(indiceInicial - 16);
+		char tipo = id.charAt(4);
 		
 		newId = fecha + ";" + hora + ";" + tipo;
 		
@@ -174,10 +207,8 @@ public class GeneradorDinamico {
 	}
 
 	private String GenerarArchivoConID(String id) {
-		String newId = null;
-		int indiceInicial = id.indexOf("~");
-
-		for (int i = indiceInicial - 10; i <= indiceInicial - 1; i++) {
+		String newId = "";
+		for (int i = 4; i <= 13; i++) {
 			newId = newId + id.charAt(i);
 		}
 		return newId;

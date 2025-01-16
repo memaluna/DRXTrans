@@ -1,0 +1,3 @@
+2025-01-16 13:50:52 ERROR Main:39 - java.lang.NullPointerException: Cannot invoke "String.split(String)" because "propertiesLine" is null
+2025-01-16 13:50:52 ERROR Main:41 - Error: Archivo de entrada con formato incorrecto.
+2025-01-16 13:50:52 ERROR Main:179 - Formato incorrecto de identificación de muestras.

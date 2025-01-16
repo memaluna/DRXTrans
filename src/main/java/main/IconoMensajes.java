@@ -12,10 +12,22 @@ import javax.swing.ImageIcon;
 
 public class IconoMensajes {
 
-	TrayIcon trayIcon = null;
+    private static IconoMensajes instancia; // Instancia única de la clase
+    private TrayIcon trayIcon = null;
+
+    // Constructor privado para evitar la creación de instancias adicionales
+    private IconoMensajes() {
+    }
+
+    // Método para obtener la instancia única
+    public static IconoMensajes getInstance() {
+        if (instancia == null) {
+            instancia = new IconoMensajes();
+        }
+        return instancia;
+    }
 
 	public void generarIcono() {
-
 
 		if (SystemTray.isSupported()) {
 			SystemTray tray = SystemTray.getSystemTray();
@@ -61,8 +73,12 @@ public class IconoMensajes {
 		trayIcon.displayMessage("NHRobot", "Inicio de aplicación.", TrayIcon.MessageType.NONE);
 	}
 	
-	public void mandarMsj(String mensaje) {
-		trayIcon.displayMessage("NHRobot", mensaje, TrayIcon.MessageType.NONE);
-	}
+    public void mandarMsj(String mensaje) {
+        if (trayIcon != null) {
+            trayIcon.displayMessage("NHRobot", mensaje, TrayIcon.MessageType.NONE);
+        } else {
+            System.err.println("El icono de la bandeja no está inicializado.");
+        }
+    }
 
 }

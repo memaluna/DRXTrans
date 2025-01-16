@@ -10,89 +10,110 @@ import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Lector {
 
+    private final Map<String, Long> lastProcessed = new HashMap<>();
 
-	public void doWath(String directory) throws IOException {
-						
-		String configPath = "conf.properties";
-		ExternalConfigManager configManager = new ExternalConfigManager(configPath);
-		
-		System.out.println("WatchService in " + directory);
+    public void doWatch(String directory) throws IOException {
 
-		// Obtenemos el directorio
-		Path directoryToWatch = Paths.get(directory);
-		if (directoryToWatch == null) {
-			throw new UnsupportedOperationException("Directory not found");
-		}
+        String configPath = "conf.properties";
+        ExternalConfigManager configManager = new ExternalConfigManager(configPath);
 
-		// Solicitamos el servicio WatchService
-		WatchService watchService = directoryToWatch.getFileSystem().newWatchService();
+        System.out.println("WatchService in " + directory);
 
-		// Registramos los eventos que queremos monitorear
-		directoryToWatch.register(watchService, new WatchEvent.Kind[] { ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY });
+        // Obtenemos el directorio
+        Path directoryToWatch = Paths.get(directory);
+        if (directoryToWatch == null) {
+            throw new UnsupportedOperationException("Directory not found");
+        }
 
-		System.out.println("Started WatchService in " + directory);
+        // Solicitamos el servicio WatchService
+        WatchService watchService = directoryToWatch.getFileSystem().newWatchService();
 
-		try {
+        // Registramos los eventos que queremos monitorear
+        directoryToWatch.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY});
 
-			// Esperamos que algo suceda con el directorio
-			WatchKey key = watchService.take();
+        System.out.println("Started WatchService in " + directory);
 
-			// Algo ocurrio en el directorio para los eventos registrados
-			while (key != null) {
-				for (WatchEvent event : key.pollEvents()) {
-					String eventKind = event.kind().toString();
-					String file = event.context().toString();
-					System.out.println("Event : " + eventKind + " in File " + file);
-					Thread.sleep(1000);
-					Generador Gen = new Generador();
-					String lineaLeida = Gen.leerArchivo(file, directory);
-					
-					String fases = configManager.getProperty(file + "-Campos");
-					GeneradorDinamico genDin = new GeneradorDinamico();
-					Map<String, String> createPropertiesMap = genDin.createPropertiesMap(fases);
-					
-			        for (Map.Entry<String, String> entry : createPropertiesMap.entrySet()) {
-			            System.out.println(entry.getKey() + " -> " + entry.getValue());
-			        }
-					
-			        String fileDirectory = directory + "\\"+ file;
-			        
-			        Map<String, Integer> header = genDin.parseHeaderToMap(fileDirectory);
-			        
-			        System.out.println("-------- header -----");
-			        for (Map.Entry<String, Integer> entry : header.entrySet()) {
-			            System.out.println(entry.getKey() + " -> " + entry.getValue());
-			        }
-			        
-			        Map<Integer, String> lastLine = genDin.parseLastLineToMap(fileDirectory);
-					
-			        System.out.println("-------- lastLine -----");
-			        for (Map.Entry<Integer, String> entry : lastLine.entrySet()) {
-			            System.out.println(entry.getKey() + " -> " + entry.getValue());
-			        }
-			        
-			        
-			        Map<String, String> datosFinales = genDin.obtenerDatosFinales(createPropertiesMap, header, lastLine);
-			        
-			        // Extraemos id para generar dato
-			        String id = genDin.obtenerID(configManager.getProperty(file + "-ID"), header, lastLine);
-			        
-			        // Generamos archivo
-			        genDin.generarArchivo(id, datosFinales, configManager.getProperty(file + "-FileName"));
-			        
-				}
+        try {
 
-				// Volvemos a escuchar. Lo mantenemos en un loop para escuchar indefinidamente.
-				key.reset();
-				key = watchService.take();
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-	}
+            // Esperamos que algo suceda con el directorio
+            WatchKey key = watchService.take();
 
+            // Algo ocurrió en el directorio para los eventos registrados
+            while (key != null) {
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    String eventKind = event.kind().toString();
+                    String file = event.context().toString();
+                    long currentTime = System.currentTimeMillis();
+
+                    // Filtrar eventos duplicados
+                    if (shouldProcessEvent(file, currentTime)) {
+                        System.out.println("Event: " + eventKind + " in File: " + file);
+                        processFileEvent(directory, file, configManager);
+                    }
+                }
+
+                // Volvemos a escuchar. Lo mantenemos en un loop para escuchar indefinidamente.
+                key.reset();
+                key = watchService.take();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            watchService.close();
+        }
+    }
+
+    private boolean shouldProcessEvent(String file, long currentTime) {
+        Long lastTime = lastProcessed.get(file);
+        if (lastTime == null || (currentTime - lastTime) > 5000) { // 1 segundo de margen
+            lastProcessed.put(file, currentTime);
+            return true;
+        }
+        return false;
+    }
+
+    private void processFileEvent(String directory, String file, ExternalConfigManager configManager) {
+        try {
+            Thread.sleep(1000);
+            String fases = configManager.getProperty(file + "-Campos");
+            GeneradorDinamico genDin = new GeneradorDinamico();
+            Map<String, String> createPropertiesMap = genDin.createPropertiesMap(fases);
+
+            for (Map.Entry<String, String> entry : createPropertiesMap.entrySet()) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+            }
+
+            String fileDirectory = directory + "\\" + file;
+
+            Map<String, Integer> header = genDin.parseHeaderToMap(fileDirectory);
+
+            System.out.println("-------- header -----");
+            for (Map.Entry<String, Integer> entry : header.entrySet()) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+            }
+
+            Map<Integer, String> lastLine = genDin.parseLastLineToMap(fileDirectory);
+
+            System.out.println("-------- lastLine -----");
+            for (Map.Entry<Integer, String> entry : lastLine.entrySet()) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+            }
+
+            Map<String, String> datosFinales = genDin.obtenerDatosFinales(createPropertiesMap, header, lastLine);
+
+            // Extraemos id para generar dato
+            String id = genDin.obtenerID(configManager.getProperty(file + "-ID"), header, lastLine);
+
+            // Generamos archivo
+            genDin.generarArchivo(id, datosFinales, configManager.getProperty(file + "-FileName"), configManager.getProperty(file + "-ContieneDirectorio"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
