@@ -37,13 +37,13 @@ public class InterfazConfig {
 
         // Panel para las propiedades fijas
         JPanel panelFijo = new JPanel(new GridLayout(2, 2, 10, 10));
-        panelFijo.setBorder(BorderFactory.createTitledBorder("Propiedades Fijas"));
+        panelFijo.setBorder(BorderFactory.createTitledBorder("Propiedades de directorios"));
 
-        JLabel labelDirectorioEntrada = new JLabel("Directorio de Entrada:");
+        JLabel labelDirectorioEntrada = new JLabel("Directorio de entrada:");
         JTextField textDirectorioEntrada = new JTextField(configManager.getProperty("DirectorioEntrada", ""));
-        JLabel labelDirectorioEntrada2 = new JLabel("Directorio de Entrada 2:");
+        JLabel labelDirectorioEntrada2 = new JLabel("Directorio de entrada 2:");
         JTextField textDirectorioEntrada2 = new JTextField(configManager.getProperty("DirectorioEntrada2", ""));
-        JLabel labelDirectorioSalida = new JLabel("Directorio de Salida:");
+        JLabel labelDirectorioSalida = new JLabel("Directorio de salida:");
         JTextField textDirectorioSalida = new JTextField(configManager.getProperty("DirectorioSalida", ""));
         
         panelFijo.setLayout(new GridLayout(3, 2, 10, 10));
@@ -56,10 +56,10 @@ public class InterfazConfig {
 
         // Panel para las propiedades dinámicas
         JPanel panelDinamico = new JPanel(new BorderLayout());
-        panelDinamico.setBorder(BorderFactory.createTitledBorder("Propiedades Dinámicas"));
+        panelDinamico.setBorder(BorderFactory.createTitledBorder("Propiedades de archivo"));
 
         DefaultTableModel tableModel = new DefaultTableModel(
-        	    new Object[]{"Elemento", "FileName", "ID", "Campos", "ID contiene directorio"}, 0 // NUEVO: Agregada la columna "ID contiene directorio"
+        	    new Object[]{"Elemento", "Nombre de archivo", "ID", "Campos", "ID contiene directorio"}, 0 // NUEVO: Agregada la columna "ID contiene directorio"
         	) {
         	    @Override
         	    public Class<?> getColumnClass(int columnIndex) {
